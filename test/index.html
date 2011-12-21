@@ -13,6 +13,7 @@
        window.onload = function() {
              
             svgEdit = new ynakajima.svg.SVGPathEditor(document.getElementById("path2"));
+            console.log(svgEdit);
             svgEdit.renderControlPoints();
             
             path2.addEventListener("click", function (e) {

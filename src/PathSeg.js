@@ -9,7 +9,7 @@
 		this.pathSegList = pathSegList;
 		this.index = index;
 		this.type = pathSeg.pathSegTypeAsLetter;
-		this.isAbs = this.type.match(/^[A-Z]$/);
+		this.isAbs = (this.type.match(/^[A-Z]$/) !== null);
 		this.x = null;
 		this.y = null;
 		this.x1 = null;
