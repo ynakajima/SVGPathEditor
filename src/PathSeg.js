@@ -10,6 +10,7 @@
 		this.index = index;
 		this.referenceNode = (referenceNode == null)? {x: 0, y: 0, type: "", referrer: []} : referenceNode;
 		this.referrer = [];
+		this.sameNode = null;
 		this.type = pathSeg.pathSegTypeAsLetter;
 		this.isAbs = (this.type.match(/^[A-Z]$/) !== null);
 		this.x = null;
@@ -22,6 +23,35 @@
 		//相対座標だった場合基準点に参照ノードとして登録
 		if (!this.isAbs) {
 			this.referenceNode.referrer.push(this);
+		}
+		
+		//終端だった場合の処理
+		if (this.type.match(/^[Z]$/i)) {
+			
+			var startNode = this.pathSegList[0];
+			
+			for (var i = this.index - 2; i > 0; i--) {
+				
+				var node = this.pathSegList[i];	
+				
+				if (node.type.match(/^[Z]$/i)) {
+					
+					startNode = this.pathSegList[i+1];
+					break;
+					
+				} 
+				
+			}
+			
+			var _prev = this.pathSegList[this.index-1];
+			
+			if ( Math.abs(_prev.x - startNode.x) < 0.001 && Math.abs(_prev.y - startNode.y) < 0.001 ) {
+				
+				_prev.sameNode = startNode;
+				startNode.sameNode = _prev;
+				
+			}
+			
 		}
 	
 		this.init();

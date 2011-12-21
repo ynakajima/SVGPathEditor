@@ -35,7 +35,7 @@
    	 * Dragの開始
    	 */
    	DraggableControlPoint.prototype.startDrag = function (e) {
-		
+
 		this.origX = this.pathSeg.pathSeg[this.xPropName];
 		this.origY = this.pathSeg.pathSeg[this.yPropName];
 		
