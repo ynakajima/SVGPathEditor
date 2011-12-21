@@ -130,14 +130,14 @@
 		var y = 0;
         var prevPoint = null;
         var prevPoint2 = null;
-        var referencePoint = null; //相対座標の基準点のPathSegオブジェクト
+        var referenceNode = null; //相対座標の基準点のPathSegオブジェクト
         
         for (var i = 0, iMax = pathSegList.numberOfItems; i < iMax; i++) {
 			
-			var pathSeg = new ynakajima.svg.PathSeg(pathSegList.getItem(i), this.pathSegList, i, referencePoint); 
+			var pathSeg = new ynakajima.svg.PathSeg(pathSegList.getItem(i), this.pathSegList, i, referenceNode); 
 			this.pathSegList.push(pathSeg);
 			
-			referencePoint = (pathSeg.type.match(/^[Z]$/i)) ? this.pathSegList[0] : pathSeg;
+			referenceNode = (pathSeg.type.match(/^[Z]$/i)) ? this.pathSegList[0] : pathSeg;
 			
 		}
 		

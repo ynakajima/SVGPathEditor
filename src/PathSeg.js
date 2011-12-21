@@ -3,12 +3,12 @@
     /**
      * PathSeg
      */
-    var PathSeg = function (pathSeg, pathSegList, index, referencePoint) {
+    var PathSeg = function (pathSeg, pathSegList, index, referenceNode) {
 		
 		this.pathSeg = pathSeg;
 		this.pathSegList = pathSegList;
 		this.index = index;
-		this.referencePoint = (referencePoint == null)? {x: 0, y: 0, type: "", referrer: []} : referencePoint;
+		this.referenceNode = (referenceNode == null)? {x: 0, y: 0, type: "", referrer: []} : referenceNode;
 		this.referrer = [];
 		this.type = pathSeg.pathSegTypeAsLetter;
 		this.isAbs = (this.type.match(/^[A-Z]$/) !== null);
@@ -21,7 +21,7 @@
 	
 		//相対座標だった場合基準点に参照ノードとして登録
 		if (!this.isAbs) {
-			this.referencePoint.referrer.push(this);
+			this.referenceNode.referrer.push(this);
 		}
 	
 		this.init();
@@ -31,7 +31,7 @@
     PathSeg.prototype.init = function () {
 	
 		var pathSeg = this.pathSeg;
-		var prev = this.referencePoint;
+		var prev = this.referenceNode;
 		var type = this.type;
 		var isAbs = this.isAbs;
 	
