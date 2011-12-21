@@ -3,11 +3,13 @@
     /**
      * PathSeg
      */
-    var PathSeg = function (pathSeg, pathSegList, index) {
+    var PathSeg = function (pathSeg, pathSegList, index, referencePoint) {
 		
 		this.pathSeg = pathSeg;
 		this.pathSegList = pathSegList;
 		this.index = index;
+		this.referencePoint = (referencePoint == null)? {x: 0, y: 0, type: "", referrer: []} : referencePoint;
+		this.referrer = [];
 		this.type = pathSeg.pathSegTypeAsLetter;
 		this.isAbs = (this.type.match(/^[A-Z]$/) !== null);
 		this.x = null;
@@ -17,30 +19,19 @@
 		this.x2 = null;
 		this.y2 = null;
 	
-	this.init();
+		//相対座標だった場合基準点に参照ノードとして登録
+		if (!this.isAbs) {
+			this.referencePoint.referrer.push(this);
+		}
+	
+		this.init();
     
     };
     
     PathSeg.prototype.init = function () {
 	
 		var pathSeg = this.pathSeg;
-		
-		
-		var prev = (this.index - 1 < 0)? {x: 0, y: 0, type: ""} : this.pathSegList[this.index - 1];
-		
-		//１つ前の要素を取得（１つ前が[Zz]だった場合は遡って取得）
-		if (prev.type.match(/^[Z]$/i)) {
-		
-			for (var i = 2; this.index - i >= 0; i++) {
-			
-				prev = this.pathSegList[this.index - i];
-				if (this.index - i -1 >= 0 && this.pathSegList[this.index - i - 1]["type"].match(/^[Z]$/i)) {
-					break;
-				}
-			}
-		
-		}
-		
+		var prev = this.referencePoint;
 		var type = this.type;
 		var isAbs = this.isAbs;
 	
@@ -77,27 +68,28 @@
 			this.pathSeg.x = x;
 			this.init();
 			
-			//次のポイントが相対座標だった場合は移動量を相殺する（選択したポイントのみ移動）
-			if (this.index + 1 < this.pathSegList.length) {
+			//参照ノードに対して移動量を相殺する（選択したポイントのみ移動）
+			for (var i = 0, iMax = this.referrer.length; i < iMax; i++) {
 				
-				var next = this.pathSegList[this.index + 1];
+				var referrer = this.referrer[i];
 				
-				if (!next.isAbs && next.type.match(/^[Z]$/i) == null) {
+				if (!referrer.isAbs && referrer.type.match(/^[Z]$/i) == null) {
 					
 					var delta = origX - x;
 					
-					if (typeof next.pathSeg.x === "number") {
-						next.pathSeg.x += delta;
+					if (typeof referrer.pathSeg.x === "number") {
+						referrer.pathSeg.x += delta;
 					}
 					
-					if (typeof next.pathSeg.x1 === "number") {
-						next.pathSeg.x1 += delta;
+					if (typeof referrer.pathSeg.x1 === "number") {
+						referrer.pathSeg.x1 += delta;
 					}
 					
-					if (typeof next.pathSeg.x2 === "number") {
-						next.pathSeg.x2 += delta;
+					if (typeof referrer.pathSeg.x2 === "number") {
+						referrer.pathSeg.x2 += delta;
 					}
-					next.init();
+					referrer.init();
+					
 				}
 				
 			}
@@ -116,27 +108,27 @@
 			this.pathSeg.y = y;
 			this.init();
 			
-			//次のポイントが相対座標だった場合は移動量を相殺する（選択したポイントのみ移動）
-			if (this.index + 1 < this.pathSegList.length) {
+			//参照ノードに対して移動量を相殺する（選択したポイントのみ移動）
+			for (var i = 0, iMax = this.referrer.length; i < iMax; i++) {
 				
-				var next = this.pathSegList[this.index + 1];
+				var referrer = this.referrer[i];
 				
-				if (!next.isAbs && next.type.match(/^[Z]$/i) == null) {
+				if (!referrer.isAbs && referrer.type.match(/^[Z]$/i) == null) {
 					
 					var delta = origY - y;
 					
-					if (typeof next.pathSeg.y === "number") {
-						next.pathSeg.y += delta;
+					if (typeof referrer.pathSeg.y === "number") {
+						referrer.pathSeg.y += delta;
 					}
 					
-					if (typeof next.pathSeg.y1 === "number") {
-						next.pathSeg.y1 += delta;
+					if (typeof referrer.pathSeg.y1 === "number") {
+						referrer.pathSeg.y1 += delta;
 					}
 					
-					if (typeof next.pathSeg.y2 === "number") {
-						next.pathSeg.y2 += delta;
+					if (typeof referrer.pathSeg.y2 === "number") {
+						referrer.pathSeg.y2 += delta;
 					}
-					next.init();
+					referrer.init();
 				}
 							
 			}
