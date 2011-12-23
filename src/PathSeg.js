@@ -3,56 +3,22 @@
     /**
      * PathSeg
      */
-    var PathSeg = function (pathSeg, pathSegList, index, referenceNode) {
+    var PathSeg = function (pathSeg, pathSegList, index, isAbs, svgPathSegList) {
 		
 		this.pathSeg = pathSeg;
+		this.origPathSeg = pathSeg;
 		this.pathSegList = pathSegList;
 		this.index = index;
-		this.referenceNode = (referenceNode == null)? {x: 0, y: 0, type: "", referrer: []} : referenceNode;
-		this.referrer = [];
 		this.sameNode = null;
 		this.type = pathSeg.pathSegTypeAsLetter;
-		this.isAbs = (this.type.match(/^[A-Z]$/) !== null);
+		this.isAbs = (isAbs)? true : (this.type.match(/^[A-Z]$/) !== null);
+		this.svgPathSegList = svgPathSegList;
 		this.x = null;
 		this.y = null;
 		this.x1 = null;
 		this.y1 = null;
 		this.x2 = null;
 		this.y2 = null;
-	
-		//相対座標だった場合基準点に参照ノードとして登録
-		if (!this.isAbs) {
-			this.referenceNode.referrer.push(this);
-		}
-		
-		//終端だった場合の処理
-		if (this.type.match(/^[Z]$/i)) {
-			
-			var startNode = this.pathSegList[0];
-			
-			for (var i = this.index - 2; i > 0; i--) {
-				
-				var node = this.pathSegList[i];	
-				
-				if (node.type.match(/^[Z]$/i)) {
-					
-					startNode = this.pathSegList[i+1];
-					break;
-					
-				} 
-				
-			}
-			
-			var _prev = this.pathSegList[this.index-1];
-			
-			if ( Math.abs(_prev.x - startNode.x) < 0.001 && Math.abs(_prev.y - startNode.y) < 0.001 ) {
-				
-				_prev.sameNode = startNode;
-				startNode.sameNode = _prev;
-				
-			}
-			
-		}
 	
 		this.init();
     
@@ -61,18 +27,32 @@
     PathSeg.prototype.init = function () {
 	
 		var pathSeg = this.pathSeg;
-		var prev = this.referenceNode;
+		var prev = (this.index - 1 < 0)? {x: 0, y: 0, type: ""} : this.pathSegList[this.index - 1];
+		
+		//１つ前の要素を取得（１つ前が[Zz]だった場合は遡って取得）
+		if (prev.type.match(/^[Z]$/i)) {
+		
+			for (var i = 2; this.index - i >= 0; i++) {
+			
+				prev = this.pathSegList[this.index - i];
+				if (this.index - i -1 >= 0 && this.pathSegList[this.index - i - 1]["origPathSeg"].pathSegTypeAsLetter.match(/^[Z]$/i)) {
+					break;
+				}
+			}
+		
+		}
+		
 		var type = this.type;
-		var isAbs = this.isAbs;
+		var _isAbs = (this.type.match(/^[A-Z]$/) !== null);
 	
 		if (type.match(/^[MLHVCSQT]$/i)) {	
 		
-			this.x = (typeof pathSeg.x === "number")? (isAbs)? pathSeg.x : prev.x + pathSeg.x : prev.x;
-			this.y = (typeof pathSeg.y === "number")? (isAbs)? pathSeg.y : prev.y + pathSeg.y : prev.y;
-			this.x1 = (typeof pathSeg.x1 === "number")? (isAbs)? pathSeg.x1 : prev.x + pathSeg.x1 : null;
-			this.y1 = (typeof pathSeg.y1 === "number")? (isAbs)? pathSeg.y1 : prev.y + pathSeg.y1 : null;
-			this.x2 = (typeof pathSeg.x2 === "number")? (isAbs)? pathSeg.x2 : prev.x + pathSeg.x2 : null;
-			this.y2 = (typeof pathSeg.y2 === "number")? (isAbs)? pathSeg.y2 : prev.y + pathSeg.y2 : null;
+			this.x = (typeof pathSeg.x === "number")? (_isAbs)? pathSeg.x : prev.x + pathSeg.x : prev.x;
+			this.y = (typeof pathSeg.y === "number")? (_isAbs)? pathSeg.y : prev.y + pathSeg.y : prev.y;
+			this.x1 = (typeof pathSeg.x1 === "number")? (_isAbs)? pathSeg.x1 : prev.x + pathSeg.x1 : null;
+			this.y1 = (typeof pathSeg.y1 === "number")? (_isAbs)? pathSeg.y1 : prev.y + pathSeg.y1 : null;
+			this.x2 = (typeof pathSeg.x2 === "number")? (_isAbs)? pathSeg.x2 : prev.x + pathSeg.x2 : null;
+			this.y2 = (typeof pathSeg.y2 === "number")? (_isAbs)? pathSeg.y2 : prev.y + pathSeg.y2 : null;
 		
 		}
 	
@@ -87,6 +67,59 @@
 			this.y1 = (prev.type.match(/^[QT]$/i))? prev.y + (prev.y - prev.y1) : prev.y;
 		
 		}
+		
+		//絶対座標への変換
+		if (this.isAbs) {
+			
+			var _path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+			var _pathSeg = null;
+			
+			switch (this.type) {
+			
+				case "m" :
+					_pathSeg = _path.createSVGPathSegMovetoAbs(this.x, this.y);
+					break;
+					
+				case "l" :
+					_pathSeg = _path.createSVGPathSegLinetoAbs(this.x, this.y);
+					break;
+				
+				case "h" :
+					_pathSeg = _path.createSVGPathSegLinetoHorizontalAbs(this.x);
+					break;
+					
+				case "v" :
+					_pathSeg = _path.createSVGPathSegLinetoVerticalAbs(this.y);
+					break;
+				
+				case "c" :
+					_pathSeg = _path.createSVGPathSegCurvetoCubicAbs(this.x, this.y, this.x1, this.y1, this.x2, this.y2);
+					break;
+					
+				case "s" :
+					_pathSeg = _path.createSVGPathSegCurvetoCubicSmoothAbs(this.x, this.y, this.x2, this.y2);
+					break;
+					
+				case "q" :
+					_pathSeg = _path.createSVGPathSegCurvetoQuadraticAbs(this.x, this.y, this.x1, this.y1);
+					break;
+					
+				case "t" :
+					_pathSeg = _path.createSVGPathSegCurvetoQuadraticSmoothAbs(this.x, this.y);
+					break;
+					
+				default :
+					_pathSeg = null;
+			}
+			
+			if (_pathSeg != null) {
+				
+				this.pathSeg = this.svgPathSegList.replaceItem(_pathSeg, this.index);
+				this.type = this.pathSeg.pathSegTypeAsLetter;
+				
+			}
+			
+		}
 			    
     };
 
@@ -97,35 +130,7 @@
 			var origX = this.pathSeg.x;
 			this.pathSeg.x = x;
 			this.init();
-			
-			//参照ノードに対して移動量を相殺する（選択したポイントのみ移動）
-			for (var i = 0, iMax = this.referrer.length; i < iMax; i++) {
-				
-				var referrer = this.referrer[i];
-				
-				if (!referrer.isAbs && referrer.type.match(/^[Z]$/i) == null) {
-					
-					var delta = origX - x;
-					
-					if (typeof referrer.pathSeg.x === "number") {
-						referrer.pathSeg.x += delta;
-					}
-					
-					if (typeof referrer.pathSeg.x1 === "number") {
-						referrer.pathSeg.x1 += delta;
-					}
-					
-					if (typeof referrer.pathSeg.x2 === "number") {
-						referrer.pathSeg.x2 += delta;
-					}
-					referrer.init();
-					
-				}
-				
-			}
 			 
-			
-			
 		}
 	
 	};
@@ -138,31 +143,6 @@
 			this.pathSeg.y = y;
 			this.init();
 			
-			//参照ノードに対して移動量を相殺する（選択したポイントのみ移動）
-			for (var i = 0, iMax = this.referrer.length; i < iMax; i++) {
-				
-				var referrer = this.referrer[i];
-				
-				if (!referrer.isAbs && referrer.type.match(/^[Z]$/i) == null) {
-					
-					var delta = origY - y;
-					
-					if (typeof referrer.pathSeg.y === "number") {
-						referrer.pathSeg.y += delta;
-					}
-					
-					if (typeof referrer.pathSeg.y1 === "number") {
-						referrer.pathSeg.y1 += delta;
-					}
-					
-					if (typeof referrer.pathSeg.y2 === "number") {
-						referrer.pathSeg.y2 += delta;
-					}
-					referrer.init();
-				}
-							
-			}
-						
 		}
 	
 	};

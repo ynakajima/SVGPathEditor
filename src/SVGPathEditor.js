@@ -17,9 +17,10 @@
      */
     var SVGPathEditor = function (targetElement, option) {   
 	
-		if (typeof option !== "object") {
+		if (typeof option != "object") {
 			
 			option = {
+				isAbs			: true,
 				targetRootLayer		: null,
 				editingRootLayer	: null,
 				pointLayer		: null,
@@ -34,6 +35,7 @@
 	
         this.targetElement = targetElement;
         this.ownerSVGElement = targetElement.ownerSVGElement;
+        this.isAbs = (typeof option.isAbs == "boolean")? option.isAbs : true;
 		this.CTM = null;
 		this.editingPath = null;
         this.pathSegList = null;
@@ -125,21 +127,20 @@
 	
 		//pathSegListの初期化
 		this.pathSegList = [];
-		var pathSegList = this.editingPath.pathSegList;
+		var svgPathSegList = this.editingPath.pathSegList;
 		var x = 0;
 		var y = 0;
         var prevPoint = null;
         var prevPoint2 = null;
-        var referenceNode = null; //相対座標の基準点のPathSegオブジェクト
         
-        for (var i = 0, iMax = pathSegList.numberOfItems; i < iMax; i++) {
-			
-			var pathSeg = new ynakajima.svg.PathSeg(pathSegList.getItem(i), this.pathSegList, i, referenceNode); 
+        for (var i = 0, iMax = svgPathSegList.numberOfItems; i < svgPathSegList.numberOfItems; i++) {
+        
+			var pathSeg = new ynakajima.svg.PathSeg(svgPathSegList.getItem(i), this.pathSegList, i, this.isAbs, svgPathSegList); 
 			this.pathSegList.push(pathSeg);
 			
-			referenceNode = (pathSeg.type.match(/^[Z]$/i)) ? this.pathSegList[0] : pathSeg;
-			
 		}
+		
+		this.targetElement.setAttribute("d", this.editingPath.getAttribute("d"));
 		
 	};
 
