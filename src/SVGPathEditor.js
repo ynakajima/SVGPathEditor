@@ -128,10 +128,6 @@
 		//pathSegListの初期化
 		this.pathSegList = [];
 		var svgPathSegList = this.editingPath.pathSegList;
-		var x = 0;
-		var y = 0;
-        var prevPoint = null;
-        var prevPoint2 = null;
         
         for (var i = 0, iMax = svgPathSegList.numberOfItems; i < svgPathSegList.numberOfItems; i++) {
         
@@ -150,11 +146,6 @@
     SVGPathEditor.prototype.updatePathSegList = function () {
 	
 		//pathSegListの更新
-		var x = 0;
-		var y = 0;
-        var prevPoint = null;
-        var prevPoint2 = null;
-        
         for (var i = 0, iMax = this.pathSegList.length; i < iMax; i++) {
 			
 			this.pathSegList[i].init();
@@ -311,13 +302,7 @@
 			
 		}
 	
-		if (this.lineLayer) {
-			this.lineLayer.parentNode.removeChild(this.lineLayer);
-		}
-	
-		if (this.pointLayer) {
-			this.pointLayer.parentNode.removeChild(this.pointLayer);
-		}
+		this.clearControlPoints();
 	
 		this.editingRootLayer.appendChild(lineLayer);
 		this.editingRootLayer.appendChild(pointLayer);
@@ -326,7 +311,30 @@
 
     };
     
-	    
+	/**
+     * 制御点の非表示
+     */
+    SVGPathEditor.prototype.clearControlPoints = function() {
+		
+		var lineLayer = document.createElementNS(SVGNS, "g");
+        lineLayer.setAttribute("class", "lineLayer");
+        var pointLayer = document.createElementNS(SVGNS, "g");
+        pointLayer.setAttribute("class", "pointLayer");
+		
+		if (this.lineLayer && this.lineLayer.parentNode) {
+			this.lineLayer.parentNode.removeChild(this.lineLayer);
+		}
+	
+		if (this.pointLayer && this.pointLayer.parentNode) {
+			this.pointLayer.parentNode.removeChild(this.pointLayer);
+		}
+		
+		this.lineLayer = lineLayer;
+		this.pointLayer = pointLayer;
+		
+	};
+	
+	
     //グローバルオブジェクトに
     if (!global.ynakajima) {
         global.ynakajima = {};

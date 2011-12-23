@@ -18,14 +18,17 @@
             
             path2.addEventListener("click", function (e) {
             	
-            	svgEdit.editingRootLayer.style.display = "block";
+            	//svgEdit.editingRootLayer.style.display = "block";
+            	svgEdit.renderControlPoints();
+            	
             	
             }, false);
             
             document.getElementById("world").addEventListener("click", function (e) {
             	
             	if (e.target == e.currentTarget) {
-	            	svgEdit.editingRootLayer.style.display = "none";
+	            	//svgEdit.editingRootLayer.style.display = "none";
+	            	svgEdit.clearControlPoints();
     			}        	
             	
             }, false);
