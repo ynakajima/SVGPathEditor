@@ -37,47 +37,9 @@
         this.lineLayer = null;
 		this.draggableControlPoints = null;
 		this.selectedPoint = null;
-		
         
         //初期化
         this.init();
-        
-        //ポイントのドラッグ
-		var that = this;
-		this.editingRootLayer.addEventListener ("mousedown", function (e) {
-			
-			if (that.editable && e.target.draggableControlPoint) {
-				
-				that.selectedPoint = e.target.draggableControlPoint;
-				that.selectedPoint.startDrag(e);
-
-			} 
-
-		}, false);
-		
-		this.ownerSVGElement.addEventListener ("mousemove", function (e) {
-			
-			if (that.editable && that.selectedPoint !== null) {
-				
-				that.selectedPoint.drag(e);
-				that.updatePathSegList();
-				that.renderControlPoints();
-			
-			} 
-
-		}, false);
-		
-		this.ownerSVGElement.addEventListener ("mouseup", function (e) {
-			
-			if (that.editable && that.selectedPoint !== null) {
-				
-				that.selectedPoint.stopDrag();
-				that.selectedPoint = null
-				that.targetElement.setAttribute("d", that.editingPath.getAttribute("d"));
-			
-			} 
-
-		}, false);
     
     };
     
@@ -117,7 +79,71 @@
         this.ownerSVGElement.appendChild(editingRootLayer);
         this.editingRootLayer = editingRootLayer;
         
+        //ポイントのドラッグ
+		var that = this;
+		this.editingRootLayer.addEventListener ("mousedown", function (e) {
+			
+			that._startDragHandler(e);
+		
+		}, false);
+		
+		this.ownerSVGElement.addEventListener ("mousemove", function (e) {
+			
+			that._dragHandler(e);
+
+		}, false);
+		
+		this.ownerSVGElement.addEventListener ("mouseup", function (e) {
+			
+			that._stopDragHandler(e);
+
+		}, false);
+        
     };
+    
+    /**
+     * Drag開始
+     */
+    SVGPathEditor.prototype._startDragHandler = function (e) {
+			
+		if (this.editable && e.target.draggableControlPoint) {
+				
+			this.selectedPoint = e.target.draggableControlPoint;
+			this.selectedPoint.startDrag(e);
+
+		}
+
+    };
+    
+    /**
+     * Drag処理
+     */
+	SVGPathEditor.prototype._dragHandler = function (e) {
+    	
+    	if (this.editable && this.selectedPoint !== null) {
+				
+			this.selectedPoint.drag(e);
+			this.updatePathSegList();
+			this.renderControlPoints();
+			
+		}
+		
+	};
+	
+	/**
+     * Drag終了
+     */
+	SVGPathEditor.prototype._stopDragHandler = function (e) {
+    	
+		if (this.editable && this.selectedPoint !== null) {
+				
+			this.selectedPoint.stopDrag();
+			this.selectedPoint = null
+			this.targetElement.setAttribute("d", this.editingPath.getAttribute("d"));
+		
+		}
+		
+	}; 
     
     /**
      * pathSegListの初期化
