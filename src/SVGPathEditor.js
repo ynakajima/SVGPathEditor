@@ -125,6 +125,27 @@
 			that._stopDragHandler(e);
 
 		}, false);
+		
+		//hover
+		this.editingRootLayer.addEventListener ( "mouseover", function (e) {
+			
+			if (that.editable && e.target.draggableControlPoint) {
+				
+				e.target.setAttribute("fill", "#f00");
+				
+			}
+			
+		}, false);
+		
+		this.editingRootLayer.addEventListener ( "mouseout", function (e) {
+			
+			if (that.editable && e.target.draggableControlPoint) {
+				
+				that.renderControlPoints();
+				
+			}
+			
+		}, false);
         
     };
     
@@ -134,9 +155,12 @@
     SVGPathEditor.prototype._startDragHandler = function (e) {
 			
 		if (this.editable && e.target.draggableControlPoint) {
-				
+			
+			e.target.draggableControlPoint.isSelected = true;
 			this.selectedPoint = e.target.draggableControlPoint;
 			this.selectedPoint.startDrag(e);
+			
+			this.renderControlPoints();
 
 		}
 
@@ -148,7 +172,7 @@
 	SVGPathEditor.prototype._dragHandler = function (e) {
     	
     	if (this.editable && this.selectedPoint !== null) {
-				
+			
 			this.selectedPoint.drag(e);
 			this.updatePathSegList();
 			this.renderControlPoints();
@@ -163,10 +187,12 @@
 	SVGPathEditor.prototype._stopDragHandler = function (e) {
     	
 		if (this.editable && this.selectedPoint !== null) {
-				
+			
+			this.selectedPoint.isSelected = false;
 			this.selectedPoint.stopDrag();
 			this.selectedPoint = null
 			this.targetElement.setAttribute("d", this.editingPath.getAttribute("d"));
+			this.renderControlPoints();
 		
 		}
 		
@@ -222,7 +248,11 @@
     SVGPathEditor.prototype.renderControlPoints = function () {
 		
 		//draggableControlPointsの初期化
-		this.draggableControlPoints = [];	
+		if (this.draggableControlPoints == null) {
+			
+			this.draggableControlPoints = [];		
+			
+		}
 			
 		//CTMを取得
         var CTM = this.CTM;
@@ -248,6 +278,18 @@
 				continue;
 			}
 			
+			
+			//isSelected
+			var isInited = (typeof this.draggableControlPoints[i] != "undefined");
+			var nodeIsSelected = (isInited && this.draggableControlPoints[i].node.isSelected);
+			var c1IsSelected = (isInited && this.draggableControlPoints[i].c1 && this.draggableControlPoints[i].c1.isSelected);
+			var c2IsSelected = (isInited && this.draggableControlPoints[i].c2 && this.draggableControlPoints[i].c2.isSelected);
+			
+			//色
+			var fillColor = (nodeIsSelected) ? "#f00" : "#fff";
+			var c1FillColor = (c1IsSelected) ? "#f00" : "#33f";
+			var c2FillColor = (c2IsSelected) ? "#f00" : "#33f";
+			
 			//pathSegとCTMから座標を算出
 			var point = this.ownerSVGElement.createSVGPoint();
 			point.x = pathSeg.x;
@@ -266,7 +308,7 @@
 			rect.setAttribute("y", point.y - 3);
 			rect.setAttribute("width", 6);
 			rect.setAttribute("height", 6);
-			rect.setAttribute("fill", "#fff");
+			rect.setAttribute("fill", fillColor);
 			rect.setAttribute("stroke", "#000");
 			rect.setAttribute("stroke-width", "1");
 			rect.setAttribute("opacity", 1);
@@ -274,9 +316,21 @@
 				rect.setAttribute("transform", "rotate(45," + (point.x) + "," + (point.y) +")");
 			}
 			
-			var draggableControlPoint = new ynakajima.svg.DraggableControlPoint(pathSeg, CTM, "");
+			var draggableControlPoint;
+			if (typeof this.draggableControlPoints[i] == "undefined") { 
+				
+				draggableControlPoint = new ynakajima.svg.DraggableControlPoint(pathSeg, CTM, "");
+				this.draggableControlPoints[i] = {
+					node : draggableControlPoint
+				};
+				
+			} else {
+				
+				draggableControlPoint = this.draggableControlPoints[i].node;
+			
+			}
+			
 			rect.draggableControlPoint = draggableControlPoint;
-			this.draggableControlPoints.push(draggableControlPoint);
 			
 			//制御ポイント１
 			if (pathSeg.x1 !== null && pathSeg.y1 !== null) {
@@ -290,7 +344,7 @@
 				c1.setAttribute("cx", point1.x);
 				c1.setAttribute("cy", point1.y);
 				c1.setAttribute("r", 3);
-				c1.setAttribute("fill", "#33f");
+				c1.setAttribute("fill", c1FillColor);
 				c1.setAttribute("stroke", "#fff");
 				c1.setAttribute("stroke-width", "1");
 				
@@ -317,9 +371,19 @@
 			
 				}
 				
-				var draggableControlPoint1 = new ynakajima.svg.DraggableControlPoint(pathSeg, CTM, 1);
+				var draggableControlPoint1;
+				if (typeof this.draggableControlPoints[i].c1 == "undefined") { 
+				
+					draggableControlPoint1 = new ynakajima.svg.DraggableControlPoint(pathSeg, CTM, 1);
+					this.draggableControlPoints[i].c1 = draggableControlPoint1;
+				
+				} else {
+				
+					draggableControlPoint1 = this.draggableControlPoints[i].c1;
+			
+				}
+				
 				c1.draggableControlPoint = draggableControlPoint1;
-				this.draggableControlPoints.push(draggableControlPoint1);
 		
 			}
 			
@@ -335,7 +399,7 @@
 				c2.setAttribute("cx", point2.x);
 				c2.setAttribute("cy", point2.y);
 				c2.setAttribute("r", 3);
-				c2.setAttribute("fill", "#33f");
+				c2.setAttribute("fill", c2FillColor);
 				c2.setAttribute("stroke", "#fff");
 				c2.setAttribute("stroke-width", 1);
 				
@@ -354,9 +418,19 @@
 					 
 				lineLayer.appendChild(line);
 				
-				var draggableControlPoint2 = new ynakajima.svg.DraggableControlPoint(pathSeg, CTM, 2);
+				var draggableControlPoint2;
+				if (typeof this.draggableControlPoints[i].c2 == "undefined") { 
+				
+					draggableControlPoint2 = new ynakajima.svg.DraggableControlPoint(pathSeg, CTM, 2);
+					this.draggableControlPoints[i].c2 = draggableControlPoint2;
+				
+				} else {
+				
+					draggableControlPoint2 = this.draggableControlPoints[i].c2;
+			
+				}
+				
 				c2.draggableControlPoint = draggableControlPoint2;
-				this.draggableControlPoints.push(draggableControlPoint2);
 					
 			}
 									

@@ -21,8 +21,28 @@
     	this.origY = null;
     	this.origPageX = null;
     	this.origPageY = null;
+    	this._isSelected = false;
+    	this.isSelected = this._isSelected;
     
     };
+    
+	/**
+     * isSelected Setter/Getter
+     */
+	ynakajima.defineSetterGetter(DraggableControlPoint.prototype, "isSelected", {
+	
+		setter : function (isSelected) {
+			
+			this._isSelected = (isSelected === true);
+				
+		},
+		getter : function () {
+		
+			return this._isSelected;
+		
+		}
+	
+	});
     
    	/**
    	 * DraggableControlPointの初期化
