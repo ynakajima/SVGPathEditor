@@ -12,6 +12,7 @@
 			option = {
 				isAbs			: true,
 				editable		: true,
+				isFollowNode	: true,
 				targetRootLayer		: null,
 				editingRootLayer	: null,
 				pointLayer		: null,
@@ -29,6 +30,8 @@
         this._editable = true;
         this.editable = (typeof option.editable == "boolean")? option.editable : true;
         this.isAbs = (typeof option.isAbs == "boolean")? option.isAbs : true;
+        this._isFollowNode = true;
+        this.isFollowNode = (typeof option.isFollowNode == "boolean")? option.isFollowNode : true;
 		this.CTM = null;
 		this.editingPath = null;
         this.pathSegList = null;
@@ -50,6 +53,30 @@
 	
 		setter : function (editable) { this._editable = (editable === true); },
 		getter : function () { return this._editable; }
+	
+	});
+	
+	/**
+     * isFollowNode Setter/Getter
+     */
+	ynakajima.defineSetterGetter(SVGPathEditor.prototype, "isFollowNode", {
+	
+		setter : function (isFollowNode) {
+		
+			this._isFollowNode = (isFollowNode === true);
+			
+			if (this.pathSegList != null) {
+			
+				for (var i = 0, iMax = this.pathSegList.length; i < iMax; i++) {
+				
+					this.pathSegList[i].isFollowNode = this._isFollowNode;	
+				
+				}
+			
+			}
+				
+		},
+		getter : function () { return this._isFollowNode; }
 	
 	});
     
@@ -153,10 +180,20 @@
 		//pathSegListの初期化
 		this.pathSegList = [];
 		var svgPathSegList = this.editingPath.pathSegList;
+        var pathSegOption = {
+			isAbs: this.isAbs, 
+			isFollowNode: this.isFollowNode        
+        };
         
         for (var i = 0, iMax = svgPathSegList.numberOfItems; i < svgPathSegList.numberOfItems; i++) {
         
-			var pathSeg = new ynakajima.svg.PathSeg(svgPathSegList.getItem(i), this.pathSegList, i, this.isAbs, svgPathSegList); 
+			var pathSeg = new ynakajima.svg.PathSeg(
+				svgPathSegList.getItem(i),
+				this.pathSegList,
+				i,
+				svgPathSegList,
+				pathSegOption
+			); 
 			this.pathSegList.push(pathSeg);
 			
 		}

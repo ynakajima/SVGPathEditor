@@ -3,7 +3,18 @@
     /**
      * PathSeg
      */
-    var PathSeg = function (pathSeg, pathSegList, index, isAbs, svgPathSegList) {
+    var PathSeg = function (pathSeg, pathSegList, index, svgPathSegList, option) {
+		
+		if (typeof option === 'undefined') {
+		
+			option = {
+				
+				isAbs : true,
+				isFollowNode : true
+				
+			};	
+			
+		}
 		
 		this.pathSeg = pathSeg;
 		this.origPathSeg = pathSeg;
@@ -11,7 +22,8 @@
 		this.index = index;
 		this.sameNode = null;
 		this.type = pathSeg.pathSegTypeAsLetter;
-		this.isAbs = (isAbs)? true : (this.type.match(/^[A-Z]$/) !== null);
+		this.isAbs = (option.isAbs)? true : (this.type.match(/^[A-Z]$/) !== null);
+		this.isFollowNode = option.isFollowNode;
 		this.svgPathSegList = svgPathSegList;
 		this.x = null;
 		this.y = null;
@@ -69,7 +81,7 @@
 		}
 		
 		//絶対座標への変換
-		if (this.isAbs) {
+		if (this.isAbs && !_isAbs) {
 			
 			var _path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 			var _pathSeg = null;
@@ -129,6 +141,26 @@
 			
 			var origX = this.pathSeg.x;
 			this.pathSeg.x = x;
+			
+			//コントロールポイントを追随させる
+			if (this.isFollowNode) { 
+				
+				var delta = x - origX;
+				var next = (this.index == this.pathSegList.length - 1)? false : this.pathSegList[this.index + 1];
+				if (next && next.x1 != null) {
+				
+					next.setX1(next.pathSeg.x1 + delta);
+				
+				}
+				
+				if (this.x2 != null) {
+					
+					this.pathSeg.x2 += delta;
+					
+				}	
+				
+			}
+			
 			this.init();
 			 
 		}
@@ -141,6 +173,26 @@
 			
 			var origY = this.pathSeg.y;
 			this.pathSeg.y = y;
+			
+			//コントロールポイントを追随させる
+			if (this.isFollowNode) { 
+				
+				var delta = y - origY;
+				var next = (this.index == this.pathSegList.length - 1)? false : this.pathSegList[this.index + 1];
+				if (next && next.y1 != null) {
+				
+					next.setY1(next.pathSeg.y1 + delta);
+				
+				}
+				
+				if (this.y2 != null) {
+					
+					this.pathSeg.y2 += delta;
+					
+				}
+				
+			}
+
 			this.init();
 			
 		}

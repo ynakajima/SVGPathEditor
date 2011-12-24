@@ -13,7 +13,12 @@
        
        window.onload = function() {
              
-            svgEdit = new ynakajima.svg.SVGPathEditor(document.getElementById("path2"), {isAbs: true});
+            svgEdit = new ynakajima.svg.SVGPathEditor(document.getElementById("path2"), 
+            	{
+            		isAbs: true,
+            		isFollowNode: true
+            	}
+            );
             console.log(svgEdit);
             svgEdit.renderControlPoints();
             
