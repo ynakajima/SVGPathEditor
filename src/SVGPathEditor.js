@@ -11,6 +11,7 @@
 			
 			option = {
 				isAbs			: true,
+				editable		: true,
 				targetRootLayer		: null,
 				editingRootLayer	: null,
 				pointLayer		: null,
@@ -25,6 +26,8 @@
 	
         this.targetElement = targetElement;
         this.ownerSVGElement = targetElement.ownerSVGElement;
+        this._editable = true;
+        this.editable = (typeof option.editable == "boolean")? option.editable : true;
         this.isAbs = (typeof option.isAbs == "boolean")? option.isAbs : true;
 		this.CTM = null;
 		this.editingPath = null;
@@ -43,7 +46,7 @@
 		var that = this;
 		this.editingRootLayer.addEventListener ("mousedown", function (e) {
 			
-			if (e.target.draggableControlPoint) {
+			if (that.editable && e.target.draggableControlPoint) {
 				
 				that.selectedPoint = e.target.draggableControlPoint;
 				that.selectedPoint.startDrag(e);
@@ -54,7 +57,7 @@
 		
 		this.ownerSVGElement.addEventListener ("mousemove", function (e) {
 			
-			if (that.selectedPoint !== null) {
+			if (that.editable && that.selectedPoint !== null) {
 				
 				that.selectedPoint.drag(e);
 				that.updatePathSegList();
@@ -66,7 +69,7 @@
 		
 		this.ownerSVGElement.addEventListener ("mouseup", function (e) {
 			
-			if (that.selectedPoint !== null) {
+			if (that.editable && that.selectedPoint !== null) {
 				
 				that.selectedPoint.stopDrag();
 				that.selectedPoint = null
@@ -78,6 +81,15 @@
     
     };
     
+    /**
+     * Editable Setter/Getter
+     */
+	ynakajima.defineSetterGetter(SVGPathEditor.prototype, "editable", {
+	
+		setter : function (editable) { this._editable = (editable === true); },
+		getter : function () { return this._editable; }
+	
+	});
     
     /**
      * 初期化
@@ -104,8 +116,6 @@
         editingRootLayer.setAttribute("class", "SVGPathEditor");
         this.ownerSVGElement.appendChild(editingRootLayer);
         this.editingRootLayer = editingRootLayer;
-
-
         
     };
     
