@@ -1,13 +1,3 @@
-/**
- * TODO:
- * 編集可／不可切り替え
- * 新規パスの描画
- * ポイントの削除
- * ポイントの追加
- * MVCの分離
- *
- */
-
 (function(global){
     
     var SVGNS = "http://www.w3.org/2000/svg";
@@ -57,7 +47,6 @@
 				
 				that.selectedPoint = e.target.draggableControlPoint;
 				that.selectedPoint.startDrag(e);
-				//console.dir(that.selectedPoint);
 
 			} 
 
