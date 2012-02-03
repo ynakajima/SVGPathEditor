@@ -488,7 +488,7 @@
 			option = {
 				isAbs			: true,
 				editable		: true,
-				isFollowNode	: true,
+				isFollowNode            : true,
 				targetRootLayer		: null,
 				editingRootLayer	: null,
 				pointLayer		: null,
@@ -516,6 +516,12 @@
         this.lineLayer = null;
         this.draggableControlPoints = null;
         this.selectedPoint = null;
+
+	//レイヤーの初期化
+        var editingRootLayer = document.createElementNS(SVGNS, "g");
+        editingRootLayer.setAttribute("class", "SVGPathEditor");
+        this.ownerSVGElement.appendChild(editingRootLayer);
+        this.editingRootLayer = editingRootLayer;
         
         //初期化
         this.init();
@@ -579,12 +585,6 @@
 		//pathSegListの初期化
 		this.initPathSegList();
 		        
-        //レイヤーの初期化
-        var editingRootLayer = document.createElementNS(SVGNS, "g");
-        editingRootLayer.setAttribute("class", "SVGPathEditor");
-        this.ownerSVGElement.appendChild(editingRootLayer);
-        this.editingRootLayer = editingRootLayer;
-        
         //ポイントのドラッグ
 		var that = this;
 		this.editingRootLayer.addEventListener ("mousedown", function (e) {
