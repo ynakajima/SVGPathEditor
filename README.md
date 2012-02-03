@@ -6,7 +6,7 @@ http://jsdo.it/ynakajima/svgPathEditor/
 Example
 ======
 
-html
+svg
 
 ```html
 <path id="path1" d="M 73 191 C 245 113 239 349 407 270" />
