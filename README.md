@@ -1,6 +1,6 @@
 Demo
 ======
-[http://jsdo.it/ynakajima/svgPathEditor/]
+http://jsdo.it/ynakajima/svgPathEditor/
 
 
 Example
