@@ -508,17 +508,20 @@
         this.isAbs = (typeof option.isAbs == "boolean")? option.isAbs : true;
         this._isFollowNode = true;
         this.isFollowNode = (typeof option.isFollowNode == "boolean")? option.isFollowNode : true;
-		this.CTM = null;
-		this.editingPath = null;
+        this.CTM = null;
+        this.editingPath = null;
         this.pathSegList = null;
         this.editingRootLayer = null;
         this.pointLayer = null;
         this.lineLayer = null;
-		this.draggableControlPoints = null;
-		this.selectedPoint = null;
+        this.draggableControlPoints = null;
+        this.selectedPoint = null;
         
         //初期化
         this.init();
+	
+	//制御点の描画
+        this.renderControlPoints();
     
     };
     
